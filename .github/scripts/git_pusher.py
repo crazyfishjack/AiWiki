@@ -12,13 +12,14 @@ import sys
 from pathlib import Path
 
 
-def git_push_report(report_path: str, query: str, wiki_root: str | None = None) -> bool:
+def git_push_report(report_path: str, query: str, wiki_root: str | None = None, evidence_path: str | None = None) -> bool:
     """将报告文件 commit 并 push 到仓库。
 
     Args:
         report_path: 报告文件路径
         query: 调研主题
         wiki_root: Wiki 根目录
+        evidence_path: 证据包文件路径（可选）
 
     Returns:
         成功返回 True，失败返回 False
@@ -30,11 +31,20 @@ def git_push_report(report_path: str, query: str, wiki_root: str | None = None) 
     _run_git(["config", "user.name", "github-actions[bot]"], cwd=wiki_root)
     _run_git(["config", "user.email", "github-actions[bot]@users.noreply.github.com"], cwd=wiki_root)
 
-    # git add
+    # git add 报告
     result = _run_git(["add", report_path], cwd=wiki_root)
     if result.returncode != 0:
-        print(f"[Git] git add 失败", file=sys.stderr)
+        print(f"[Git] git add 报告失败", file=sys.stderr)
         return False
+
+    # git add 证据包（如果存在）
+    if evidence_path and Path(evidence_path).exists():
+        result = _run_git(["add", evidence_path], cwd=wiki_root)
+        if result.returncode != 0:
+            print(f"[Git] git add 证据包失败", file=sys.stderr)
+            # 证据包添加失败不中断，继续推送报告
+        else:
+            print(f"[Git] 证据包已添加: {evidence_path}")
 
     # git commit
     commit_msg = f"[auto-research] {query}"

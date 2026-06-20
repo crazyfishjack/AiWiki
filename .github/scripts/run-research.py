@@ -74,7 +74,7 @@ def main() -> int:
 
     # 7. Git 推送
     print("[INFO] 开始 Git 推送...")
-    success = git_push_report(report_path, query, wiki_root)
+    success = git_push_report(report_path, query, wiki_root, evidence_path)
     if not success:
         _handle_failure(query, "Git 推送", "推送失败")
         return 1
