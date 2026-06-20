@@ -1,0 +1,28 @@
+{
+  "wiki_root": "F:/工作档案/WiKi/标准Wiki - 副本",
+  "raw_default_dir": "raw/articles",
+  "proxy": "http://127.0.0.1:7897",
+  "api_keys": {
+    "tavily": "",
+    "exa": "",
+    "firecrawl": "",
+    "jina": "",
+    "aliyun": ""
+  },
+  "webhooks": {
+    "wechat": ""
+  },
+  "research_defaults": {
+    "max_subqueries": 6,
+    "max_deep_read_urls": 10,
+    "exa_highlight_char_limit": 4000,
+    "evidence_full_content": true,
+    "tavily_min_score": 0.4
+  },
+  "llm_config": {
+    "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+    "model": "qwen3.5-plus",
+    "max_tokens": 8192,
+    "temperature": 0.7
+  }
+}

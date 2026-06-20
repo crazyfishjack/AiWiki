@@ -1,6 +1,12 @@
 # Local Wiki Research Skill secrets
 .cursor/skills/wiki-research/config.local.json
 .cursor/skills/wiki-research/*.local.json
+.trae/skills/wiki-research/config.local.json
+.trae/skills/wiki-research/*.local.json
+
+# Auto-research scripts secrets
+.github/scripts/config.local.json
+.github/scripts/config.*.local.json
 
 # Python cache
 __pycache__/
