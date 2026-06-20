@@ -52,7 +52,7 @@ def compile_evidence(
     llm_config = config.get("llm_config", {})
     base_url = llm_config.get("base_url", "https://dashscope.aliyuncs.com/compatible-mode/v1")
     model = llm_config.get("model", "qwen3.5-plus")
-    max_tokens = llm_config.get("max_tokens", 128000)
+    max_tokens = llm_config.get("max_tokens", 64000)
     temperature = llm_config.get("temperature", 0.3)
 
     api_key = config.get("api_keys", {}).get("aliyun")
