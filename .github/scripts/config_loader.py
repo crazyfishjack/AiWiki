@@ -17,12 +17,21 @@ from typing import Any
 
 def load_config(config_path: str | None = None) -> dict[str, Any]:
     """加载配置，GitHub Secrets 优先，本地 JSON 兜底。"""
-    config: dict[str, Any] = {}
+    # 默认配置
+    config: dict[str, Any] = {
+        "raw_default_dir": "raw/articles",
+        "llm_config": {
+            "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+            "model": "qwen3.5-plus",
+            "max_tokens": 8192,
+            "temperature": 0.7
+        }
+    }
 
-    # 1. 从本地配置文件加载基础结构（如果存在）
+    # 1. 从本地配置文件加载（如果存在）
     local_config = _load_local_config(config_path)
     if local_config:
-        config.update(local_config)
+        _deep_update(config, local_config)
 
     # 2. 从 GitHub Secrets（环境变量）覆盖敏感字段
     env_overrides = _load_from_env()
