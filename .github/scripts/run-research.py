@@ -7,7 +7,9 @@
 
 from __future__ import annotations
 
+import json
 import os
+import subprocess
 import sys
 import traceback
 from pathlib import Path
@@ -18,7 +20,6 @@ sys.path.insert(0, str(script_dir))
 
 from config_loader import load_config, require_valid_config
 from issue_parser import get_query, parse_args
-from research_runner import run_research
 from llm_compiler import compile_evidence, save_compiled_report
 from git_pusher import git_push_report
 from wechat_notifier import send_notification
@@ -47,9 +48,9 @@ def main() -> int:
     require_valid_config(config)
     print("[INFO] 配置加载成功")
 
-    # 4. 执行调研
+    # 4. 执行调研（调用 four_tool_research.py）
     print("[INFO] 开始执行调研...")
-    evidence_path = run_research(query)
+    evidence_path = _run_four_tool_research(query, config)
     if not evidence_path:
         _handle_failure(query, "调研执行", "四工具调研失败，未生成证据包")
         return 1
@@ -92,6 +93,104 @@ def main() -> int:
     print("自动调研完成")
     print("=" * 60)
     return 0
+
+
+def _run_four_tool_research(query: str, config: dict) -> str | None:
+    """调用 four_tool_research.py 执行调研。
+
+    在 Actions 环境中，需要创建临时配置文件。
+    """
+    # 定位 four_tool_research.py
+    script_dir = Path(__file__).resolve().parent
+    four_tool_script = script_dir.parent.parent / ".trae" / "skills" / "wiki-research" / "scripts" / "four_tool_research.py"
+
+    if not four_tool_script.exists():
+        # 尝试其他路径
+        four_tool_script = Path(".trae/skills/wiki-research/scripts/four_tool_research.py")
+
+    if not four_tool_script.exists():
+        print("[ERROR] 找不到 four_tool_research.py", file=sys.stderr)
+        return None
+
+    # 创建临时配置文件
+    temp_config = _create_temp_config(config)
+    if not temp_config:
+        print("[ERROR] 创建临时配置失败", file=sys.stderr)
+        return None
+
+    # 构建命令
+    cmd = [
+        sys.executable,
+        str(four_tool_script),
+        "--query", query,
+        "--mode", "standard",
+        "--raw-dir", "raw/articles",
+        "--config", str(temp_config)
+    ]
+
+    print(f"[Research] 执行: {' '.join(cmd)}")
+
+    try:
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=600  # 10 分钟超时
+        )
+
+        print(f"[Research] 返回码: {result.returncode}")
+        if result.stdout:
+            print(f"[Research] stdout:\n{result.stdout}")
+        if result.stderr:
+            print(f"[Research] stderr:\n{result.stderr}", file=sys.stderr)
+
+        if result.returncode != 0:
+            print(f"[Research] 调研失败，返回码: {result.returncode}", file=sys.stderr)
+            return None
+
+        # 解析 RAW_RESEARCH_FILE
+        for line in result.stdout.split("\n"):
+            if line.startswith("RAW_RESEARCH_FILE="):
+                return line[len("RAW_RESEARCH_FILE="):].strip()
+
+        print("[Research] 警告: 未找到 RAW_RESEARCH_FILE", file=sys.stderr)
+        return None
+
+    except subprocess.TimeoutExpired:
+        print("[Research] 调研超时（超过 10 分钟）", file=sys.stderr)
+        return None
+    except Exception as e:
+        print(f"[Research] 执行异常: {e}", file=sys.stderr)
+        return None
+
+
+def _create_temp_config(config: dict) -> Path | None:
+    """创建临时配置文件供 four_tool_research.py 使用。"""
+    try:
+        # 合并配置
+        temp_config = {
+            "wiki_root": config.get("wiki_root", "."),
+            "raw_default_dir": config.get("raw_default_dir", "raw/articles"),
+            "proxy": config.get("proxy", ""),
+            "api_keys": config.get("api_keys", {}),
+            "research_defaults": config.get("research_defaults", {
+                "max_subqueries": 6,
+                "max_deep_read_urls": 10,
+                "exa_highlight_char_limit": 4000,
+                "evidence_full_content": True,
+                "tavily_min_score": 0.4
+            })
+        }
+
+        temp_path = Path("/tmp/wiki_research_config.json")
+        temp_path.parent.mkdir(parents=True, exist_ok=True)
+        with temp_path.open("w", encoding="utf-8") as f:
+            json.dump(temp_config, f, ensure_ascii=False, indent=2)
+
+        return temp_path
+    except Exception as e:
+        print(f"[ERROR] 创建临时配置失败: {e}", file=sys.stderr)
+        return None
 
 
 def _handle_failure(query: str, step: str, error_summary: str) -> None:
