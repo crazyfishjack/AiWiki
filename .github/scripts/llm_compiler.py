@@ -52,7 +52,7 @@ def compile_evidence(
     llm_config = config.get("llm_config", {})
     base_url = llm_config.get("base_url", "https://dashscope.aliyuncs.com/compatible-mode/v1")
     model = llm_config.get("model", "qwen3.5-plus")
-    max_tokens = llm_config.get("max_tokens", 32000)
+    max_tokens = llm_config.get("max_tokens", 128000)
     temperature = llm_config.get("temperature", 0.3)
 
     api_key = config.get("api_keys", {}).get("aliyun")
@@ -167,6 +167,21 @@ def _build_prompt(evidence_content: str, query: str) -> str:
 
 ## 原始证据摘录
 （保留必要摘录）
+
+## 强制要求（必须遵守）
+
+1. **不得压缩超过 30%**：原始证据中的详细描述必须保留，不能只提取结论
+2. **逐来源总结必须包含完整细节**：
+   - 核心内容：保留原文的详细描述，不是一句话概括
+   - 可用事实：列出具体的数据、指标、参数
+   - 局限：详细说明局限性的具体表现
+   - 适合入库知识点：列出具体的知识点，不是泛泛而谈
+3. **内容整理必须系统化展开**：
+   - 每个小节必须详细展开，不能只列标题
+   - 表格中的每项必须有详细说明
+   - 技术细节必须保留具体实现方式
+4. **如果内容超出 max_tokens，优先保留技术细节**，压缩背景介绍和综述部分
+5. **保留所有原始数据表格**，不得省略或简化
 
 要求：
 - 用中文输出
