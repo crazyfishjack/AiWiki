@@ -86,8 +86,7 @@ def main() -> int:
     send_notification(
         query=query,
         status="success",
-        report_path=report_path,
-        report_text=report_text
+        report_path=report_path
     )
 
     print("=" * 60)
