@@ -37,26 +37,26 @@ cp .github/scripts/config.example.json .github/scripts/config.local.json
 
 在仓库 Settings > Secrets and variables > Actions 中添加：
 
-| Secret Name | 说明 |
-|------------|------|
-| `TAVILY_API_KEY` | Tavily API Key |
-| `EXA_API_KEY` | Exa API Key |
-| `FIRECRAWL_API_KEY` | Firecrawl API Key |
-| `JINA_API_KEY` | Jina API Key |
-| `ALIYUN_API_KEY` | 阿里云百炼 API Key |
-| `WECHAT_WEBHOOK_URL` | 企业微信 Webhook URL |
+| Secret Name          | 说明                |
+| -------------------- | ----------------- |
+| `TAVILY_API_KEY`     | Tavily API Key    |
+| `EXA_API_KEY`        | Exa API Key       |
+| `FIRECRAWL_API_KEY`  | Firecrawl API Key |
+| `JINA_API_KEY`       | Jina API Key      |
+| `ALIYUN_API_KEY`     | 阿里云百炼 API Key     |
+| `WECHAT_WEBHOOK_URL` | 企业微信 Webhook URL  |
 
 ## 脚本说明
 
-| 脚本 | 功能 |
-|------|------|
-| `run-research.py` | 主入口，编排完整管道 |
-| `config_loader.py` | 配置加载（环境变量 + 本地文件） |
-| `issue_parser.py` | 解析 GitHub Issue 提取查询 |
-| `research_runner.py` | 调用四工具调研 |
-| `llm_compiler.py` | 调用阿里云 Qwen 编译报告 |
-| `git_pusher.py` | Git commit + push |
-| `wechat_notifier.py` | 企业微信通知 |
+| 脚本                   | 功能                   |
+| -------------------- | -------------------- |
+| `run-research.py`    | 主入口，编排完整管道           |
+| `config_loader.py`   | 配置加载（环境变量 + 本地文件）    |
+| `issue_parser.py`    | 解析 GitHub Issue 提取查询 |
+| `research_runner.py` | 调用四工具调研              |
+| `llm_compiler.py`    | 调用阿里云 Qwen 编译报告      |
+| `git_pusher.py`      | Git commit + push    |
+| `wechat_notifier.py` | 企业微信通知               |
 
 ## 依赖安装
 
@@ -74,10 +74,9 @@ pip install -r .github/scripts/requirements.txt
 
 用户问题："我想了解 Trae 和 Cursor 哪个更好用"
 
-| 错误写法 | 正确写法 |
-|---------|---------|
-| `[调研] Trae 和 Cursor 哪个更好用` | `[调研] Trae IDE 功能特性 代码生成 中文支持 定价策略` |
-| `[调研] 帮我比较一下这两个工具` | `[调研] Cursor Composer 模式 跨文件重构 企业级隐私` |
+| 错误写法                       | 正确写法                                             |
+| -------------------------- | ------------------------------------------------ |
+| `[调研] Trae 和 Cursor 哪个更好用` | `[调研] Trae Cursor 功能特性 代码生成 模式 定价策略 跨文件重构 企业级隐私` |
 
 #### 为什么需要拆解关键词？
 
@@ -85,7 +84,7 @@ pip install -r .github/scripts/requirements.txt
 2. **多方位覆盖**：一个 `[调研]` 任务会同时检索多个关键词，覆盖不同维度
 3. **避免遗漏**：简单复述用户问题可能遗漏关键维度（如定价、隐私、性能）
 
-#### 关键词拆解原则
+#### 关键词拆解原则示例
 
 ```
 用户问题: "2026年大模型在招投标领域的最新应用"
@@ -102,12 +101,12 @@ pip install -r .github/scripts/requirements.txt
 
 一个 `[调研]` 任务会自动执行以下检索：
 
-| 工具 | 作用 | 检索方式 |
-|------|------|---------|
-| **Tavily** | 通用搜索 | 基于关键词发现信源 |
-| **Exa** | 语义搜索 | 基于语义相似度发现相关页面 |
-| **Firecrawl** | 精读普通页面 | 抓取并提取正文内容 |
-| **Jina** | 学术/PDF | 处理 PDF 和学术文献 |
+| 工具            | 作用     | 检索方式          |
+| ------------- | ------ | ------------- |
+| **Tavily**    | 通用搜索   | 基于关键词发现信源     |
+| **Exa**       | 语义搜索   | 基于语义相似度发现相关页面 |
+| **Firecrawl** | 精读普通页面 | 抓取并提取正文内容     |
+| **Jina**      | 学术/PDF | 处理 PDF 和学术文献  |
 
 **建议**：一个 `[调研]` 任务中放置 **5-10 个关键词**，覆盖用户问题的各个维度，不需要拆分成多个 issue。
 
@@ -116,3 +115,4 @@ pip install -r .github/scripts/requirements.txt
 - `.github/scripts/config.local.json` 已加入 `.gitignore`，不会提交到仓库
 - 所有 API Key 通过 GitHub Secrets 注入，不要在代码中硬编码
 - 调研结果保存到 `raw/articles/` 目录
+
