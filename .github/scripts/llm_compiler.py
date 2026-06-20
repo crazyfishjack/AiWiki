@@ -52,8 +52,8 @@ def compile_evidence(
     llm_config = config.get("llm_config", {})
     base_url = llm_config.get("base_url", "https://dashscope.aliyuncs.com/compatible-mode/v1")
     model = llm_config.get("model", "qwen3.5-plus")
-    max_tokens = llm_config.get("max_tokens", 8192)
-    temperature = llm_config.get("temperature", 0.7)
+    max_tokens = llm_config.get("max_tokens", 32000)
+    temperature = llm_config.get("temperature", 0.3)
 
     api_key = config.get("api_keys", {}).get("aliyun")
     if not api_key:
@@ -136,7 +136,7 @@ def _build_prompt(evidence_content: str, query: str) -> str:
 （3-7 条可复用结论，每条带来源和可信度）
 
 ## 内容整理
-（系统化整理所有有用信息）
+（保留所有有用的信息，系统化，结构清晰，逻辑正确）
 
 ## 推荐工作流
 （如何组合使用这些工具）
