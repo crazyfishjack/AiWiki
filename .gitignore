@@ -1,0 +1,7 @@
+# Local Wiki Research Skill secrets
+.cursor/skills/wiki-research/config.local.json
+.cursor/skills/wiki-research/*.local.json
+
+# Python cache
+__pycache__/
+*.pyc

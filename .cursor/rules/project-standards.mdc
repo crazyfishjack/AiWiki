@@ -1,0 +1,25 @@
+---
+description: 项目规范、代码标准、Git 规范
+alwaysApply: true
+---
+# 项目规范
+## 包管理
+- 统一使用 `uv add`，禁止 `pip install`
+- 前端使用 `npm install`，禁止 yarn/pnpm
+## 代码规范
+- Python：ruff format + ruff check，line-length=100
+- 类型注解：所有函数必须有完整类型注解（mypy strict）
+- 异步：数据库/Redis/LLM 调用全部使用 async/await
+## 分层约束
+- api/ 层只做 HTTP 转换，不含业务逻辑
+- services/ 层不依赖 FastAPI（可独立测试）
+- repositories/ 层封装所有 DB 查询，services 不直接写 SQL
+## 关键业务约束
+- LLM 生成题目必须经过 SymPy 验证，验证失败不得展示给用户
+- Matplotlib 必须设置中文字体：`rcParams['font.family'] = ['WenQuanYi Zen Hei']`
+- Puppeteer 启动必须加：`--no-sandbox --disable-setuid-sandbox`
+- 知识点必须在 268 考点范围内，超纲题目自动拒绝
+## Git 规范
+- Conventional Commits：`<type>(<scope>): <subject>`
+- type：feat / fix / perf / refactor / test / docs / ci / chore
+- 禁止模糊描述："fix bug"、"修改"、"update"

@@ -1,6 +1,6 @@
 ---
 title: "当前关联图谱"
-updated: 2026-05-31
+updated: 2026-06-08
 ---
 
 # 关联图谱
@@ -16,12 +16,28 @@ updated: 2026-05-31
 
 ## related-to（主题相近）
 <!-- 格式：[[A]] ↔ [[B]] -->
+- [[openspec]] ↔ [[superpowers]]
+- [[openspec]] ↔ [[openspec-superpowers-cursor-workflow]]
+- [[superpowers]] ↔ [[openspec-superpowers-cursor-workflow]]
+- [[gitea-actions-expression-compatibility]] ↔ [[provision-workflow-merge-deduplication]]
+- [[gitea-actions-expression-compatibility]] ↔ [[gitea-actions-kubectl-install]]
+- [[uv-sync-python-upper-bound]] ↔ [[npm-registry-frontend-docker-build]]
+- [[uv-sync-python-upper-bound]] ↔ [[python-src-layout-docker-pythonpath]]
+- [[kubernetes-rollout-timeout-diagnostics]] ↔ [[python-src-layout-docker-pythonpath]]
+- [[spin-consultative-sales-questioning]] ↔ [[business-understanding-framework]]
+- [[business-understanding-framework]] ↔ [[expert-judgment-extraction-workflow]]
+- [[expert-judgment-extraction-workflow]] ↔ [[deep-demand-discovery-workflow]]
 
 ## is-part-of（组成关系）
 <!-- 格式：[[A]] → [[B]] -->
 
 ## depends-on（依赖关系）
 <!-- 格式：[[A]] → [[B]] -->
+- [[openspec-superpowers-cursor-workflow]] → [[openspec]]
+- [[openspec-superpowers-cursor-workflow]] → [[superpowers]]
+- [[kubernetes-rollout-timeout-diagnostics]] → [[gitea-actions-kubectl-install]]
+- [[deep-demand-discovery-workflow]] → [[business-understanding-framework]]
+- [[deep-demand-discovery-workflow]] → [[spin-consultative-sales-questioning]]
 
 ## contradicts（矛盾关系）
 <!-- 格式：[[A]] ↔ [[B]] | 矛盾点简述 -->

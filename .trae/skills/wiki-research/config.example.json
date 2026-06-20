@@ -1,0 +1,18 @@
+{
+  "wiki_root": "F:/工作档案/WiKi/标准Wiki - 副本",
+  "raw_default_dir": "raw/articles",
+  "proxy": "http://127.0.0.1:10808",
+  "api_keys": {
+    "tavily": "",
+    "exa": "",
+    "firecrawl": "",
+    "jina": ""
+  },
+  "research_defaults": {
+    "max_subqueries": 6,
+    "max_deep_read_urls": 10,
+    "exa_highlight_char_limit": 4000,
+    "evidence_full_content": true,
+    "tavily_min_score": 0.4
+  }
+}

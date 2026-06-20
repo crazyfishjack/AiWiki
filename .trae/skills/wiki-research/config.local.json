@@ -1,0 +1,18 @@
+{
+  "wiki_root": "F:/工作档案/WiKi/标准Wiki - 副本",
+  "raw_default_dir": "raw/articles",
+  "proxy": "http://127.0.0.1:7897",
+  "api_keys": {
+    "tavily": "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",
+    "exa": "e316b742-3cd7-43d0-b6aa-e0323195cb39",
+    "firecrawl": "fc-1f7752eddc4b4b869d7e2a9021e1b5fc",
+    "jina": "jina_76ddc178c10b4a168ff6d96d3639b48aedvqWRycUh7ARWKrAcjBiaHYF1ps"
+  },
+  "research_defaults": {
+    "max_subqueries": 6,
+    "max_deep_read_urls": 10,
+    "exa_highlight_char_limit": 4000,
+    "evidence_full_content": true,
+    "tavily_min_score": 0.4
+  }
+}

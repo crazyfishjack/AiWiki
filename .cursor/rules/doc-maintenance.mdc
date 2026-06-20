@@ -1,0 +1,17 @@
+---
+description: 文档维护规则
+alwaysApply: false
+---
+# 文档维护规则
+## 何时更新 docs/STATUS.md
+- 完成一个功能模块后
+- 发现新的技术障碍后
+- 每次会话结束前（更新"下次会话建议起点"）
+## 何时更新 docs/DECISIONS.md
+- 做出新的架构决策时（立即记录，不事后补）
+- 废弃旧决策时（修改状态，不删除）
+## 何时更新 docs/CHANGELOG.md
+- 每次 git commit 后，在 [Unreleased] 下追加一行
+## 格式要求
+- STATUS.md 末尾必须有 `_最后更新：YYYY-MM-DD_`
+- DECISIONS.md 每条 ADR 必须有日期和状态
