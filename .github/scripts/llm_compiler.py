@@ -17,8 +17,12 @@ from typing import Any
 
 try:
     import requests
+    from requests.adapters import HTTPAdapter
+    from urllib3.util.retry import Retry
 except ImportError:
     requests = None  # type: ignore
+    HTTPAdapter = None  # type: ignore
+    Retry = None  # type: ignore
 
 
 MODEL_WINDOW_LIMITS = {
@@ -272,6 +276,128 @@ def log_llm_call_end(
     print("=" * 60, flush=True)
 
 
+def _build_session() -> Any:
+    """构建带有指数退避重试策略的 Session。"""
+    session = requests.Session()
+    if HTTPAdapter is not None and Retry is not None:
+        retry_strategy = Retry(
+            total=5,
+            backoff_factor=2,
+            status_forcelist=[429, 500, 502, 503, 504],
+            allowed_methods=["POST"],
+            raise_on_status=False,
+        )
+        adapter = HTTPAdapter(max_retries=retry_strategy)
+        session.mount("https://", adapter)
+        session.mount("http://", adapter)
+    return session
+
+
+def _parse_sse_chunk(chunk_bytes: bytes) -> tuple[str, dict]:
+    """解析一条 SSE chunk，返回 (event_type, data_dict)。
+
+    正常数据行：data: {"choices": [...]}
+    结束行：data: [DONE]
+    """
+    try:
+        line = chunk_bytes.decode("utf-8", errors="replace").strip()
+    except Exception:
+        return "", {}
+
+    if not line:
+        return "", {}
+
+    if not line.startswith("data:"):
+        return "", {}
+
+    data_str = line[5:].strip()
+    if not data_str:
+        return "", {}
+
+    if data_str == "[DONE]":
+        return "done", {}
+
+    try:
+        data_dict = json.loads(data_str)
+        return "content", data_dict
+    except json.JSONDecodeError:
+        return "", {}
+
+
+def _stream_call_api(
+    url: str,
+    headers: dict,
+    payload: dict,
+) -> tuple[str, str, dict]:
+    """流式调用 LLM API，边收边存。
+
+    返回 (content, finish_reason, last_chunk_data)。
+    """
+    content_parts: list[str] = []
+    finish_reason = "unknown"
+    last_data: dict = {}
+    char_count = 0
+    last_log_time = time.time()
+
+    session = _build_session()
+    try:
+        response = session.post(
+            url,
+            headers=headers,
+            json=payload,
+            timeout=(10, 600),
+            stream=True,
+        )
+
+        if response.status_code == 429:
+            print("[LLM] 遇到速率限制 (429)，等待 5 秒后重试...", flush=True)
+            time.sleep(5)
+            return "", "rate_limit", {}
+
+        response.raise_for_status()
+
+        print("[LLM] 开始流式接收响应...", flush=True)
+
+        for chunk in response.iter_lines(decode_unicode=False, delimiter=b"\n"):
+            if not chunk:
+                continue
+
+            event_type, data_dict = _parse_sse_chunk(chunk)
+
+            if event_type == "done":
+                break
+
+            if event_type == "content":
+                # OpenAI 兼容格式：choices[0].delta.content
+                choices = data_dict.get("choices", [])
+                if choices:
+                    choice = choices[0]
+                    delta = choice.get("delta", {})
+                    delta_content = delta.get("content", "")
+                    if delta_content:
+                        content_parts.append(delta_content)
+                        char_count += len(delta_content)
+
+                    # 记录 finish_reason（可能在最后一个 chunk 中）
+                    fr = choice.get("finish_reason")
+                    if fr:
+                        finish_reason = fr
+                        last_data = data_dict
+                    elif data_dict.get("usage"):
+                        last_data = data_dict
+
+                # 每 5 秒打印一次进度
+                current_time = time.time()
+                if current_time - last_log_time >= 5:
+                    print("[LLM] 已接收 " + str(char_count) + " 字符...", flush=True)
+                    last_log_time = current_time
+    finally:
+        session.close()
+
+    content = "".join(content_parts)
+    return content, finish_reason, last_data
+
+
 def compile_evidence(
     evidence_path: str,
     config: dict,
@@ -326,44 +452,49 @@ def compile_evidence(
             {"role": "user", "content": prompt}
         ],
         "max_tokens": max_output_tokens,
-        "temperature": temperature
+        "temperature": temperature,
+        "stream": True,
+        "stream_options": {"include_usage": True},
     }
 
     for attempt in range(3):
         try:
-            print("[LLM] 调用阿里云 API (尝试 " + str(attempt + 1) + "/3)...", flush=True)
-            response = requests.post(url, headers=headers, json=payload, timeout=1800)
+            print("", flush=True)
+            print("[LLM] 调用阿里云 API (尝试 " + str(attempt + 1) + "/3, 流式)...", flush=True)
+            print("[LLM] timeout: connect=10s, read=600s", flush=True)
+            content, finish_reason, last_data = _stream_call_api(url, headers, payload)
 
-            if response.status_code == 429:
-                print("[LLM] 遇到速率限制，等待 5 秒后重试...", flush=True)
-                time.sleep(5)
-                continue
-
-            response.raise_for_status()
-            resp_data = response.json()
-
-            if "choices" in resp_data and len(resp_data["choices"]) > 0:
-                choice = resp_data["choices"][0]
-                content = choice.get("message", {}).get("content", "")
-                finish_reason = choice.get("finish_reason", "unknown")
-
-                log_llm_call_end(resp_data, finish_reason, len(content))
-
-                if finish_reason == "length":
-                    print("[LLM] WARNING 输出被 max_tokens 上限截断，请增大 max_tokens 配置", file=sys.stderr)
-
-                if content:
-                    print("[LLM] 编译成功，生成 " + str(len(content)) + " 字符", flush=True)
-                    return content
+            if finish_reason == "rate_limit":
+                if attempt < 2:
+                    print("[LLM] 速率限制触发重试...", flush=True)
+                    time.sleep(5)
+                    continue
                 else:
-                    print("[LLM] 警告: API 返回空内容", file=sys.stderr)
+                    print("[LLM] 错误: 持续速率限制，3 次重试后仍失败", file=sys.stderr)
                     return None
-            else:
-                print("[LLM] 警告: 未找到 choices: " + str(resp_data), file=sys.stderr)
+
+            if not content:
+                print("[LLM] 警告: API 返回空内容 (finish_reason=" + finish_reason + ")", file=sys.stderr)
+                if attempt < 2:
+                    print("[LLM] 等待 5 秒后重试...", flush=True)
+                    time.sleep(5)
+                    continue
                 return None
 
-        except requests.exceptions.Timeout:
-            print("[LLM] 请求超时，尝试 " + str(attempt + 1) + "/3", file=sys.stderr)
+            print("", flush=True)
+            print("[LLM] 流式接收完成", flush=True)
+
+            # 使用实际收到的 data 结构打印诊断
+            log_llm_call_end(last_data, finish_reason, len(content))
+
+            if finish_reason == "length":
+                print("[LLM] WARNING 输出被 max_tokens 上限截断，请增大 max_tokens 配置", file=sys.stderr)
+
+            print("[LLM] 编译成功，生成 " + str(len(content)) + " 字符", flush=True)
+            return content
+
+        except requests.exceptions.Timeout as e:
+            print("[LLM] 请求超时 (" + str(e) + ")，尝试 " + str(attempt + 1) + "/3", file=sys.stderr)
             if attempt < 2:
                 time.sleep(5)
             continue
