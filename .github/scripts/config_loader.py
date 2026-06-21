@@ -22,8 +22,8 @@ def load_config(config_path: str | None = None) -> dict[str, Any]:
         "raw_default_dir": "raw/articles",
         "llm_config": {
             "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
-            "model": "qwen3.7-plus",
-            "max_tokens": 64000,
+            "model": "qwen3.7-max",
+            "max_tokens": 65000,
             "temperature": 0.7
         }
     }

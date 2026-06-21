@@ -26,6 +26,7 @@ except ImportError:
 MODEL_WINDOW_LIMITS = {
     "qwen3-7b-plus": (128_000, 32_000),
     "qwen3.7-plus": (128_000, 32_000),
+    "qwen3.7-max": (1_000_000, 65_536),
     "qwen3-14b-plus": (128_000, 32_000),
     "qwen3.14-plus": (128_000, 32_000),
     "qwen3-30b-plus": (128_000, 32_000),
