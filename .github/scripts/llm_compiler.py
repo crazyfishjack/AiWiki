@@ -83,7 +83,7 @@ def compile_evidence(
     for attempt in range(3):
         try:
             print(f"[LLM] 调用阿里云 API (尝试 {attempt + 1}/3)...")
-            response = requests.post(url, headers=headers, json=payload, timeout=500)
+            response = requests.post(url, headers=headers, json=payload, timeout=1800)
 
             if response.status_code == 429:
                 print(f"[LLM] 遇到速率限制，等待 5 秒后重试...")
