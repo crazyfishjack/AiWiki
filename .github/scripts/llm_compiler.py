@@ -72,7 +72,7 @@ def compile_evidence(
     payload = {
         "model": model,
         "messages": [
-            {"role": "system", "content": "你是一个专业的调研报告撰写助手。请基于提供的证据包，生成结构化的中文调研报告。"},
+            {"role": "system", "content": "你是一名资深行业研究分析师，擅长从多源证据中提取、整合并重构高质量调研报告。你的核心能力包括：识别关键事实与数据、保留来源的论证逻辑与叙事结构、进行跨源交叉验证与矛盾检测、输出结构清晰且信息密度高的专业报告。工作原则：忠于原始证据，不遗漏分析性内容，不将段落压缩为参数列表，不编造无依据信息。"},
             {"role": "user", "content": prompt}
         ],
         "max_tokens": max_tokens,
