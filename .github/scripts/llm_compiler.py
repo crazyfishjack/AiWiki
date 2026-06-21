@@ -95,7 +95,12 @@ def compile_evidence(
 
             # 提取生成的内容
             if "choices" in data and len(data["choices"]) > 0:
-                content = data["choices"][0].get("message", {}).get("content", "")
+                choice = data["choices"][0]
+                content = choice.get("message", {}).get("content", "")
+                finish_reason = choice.get("finish_reason", "unknown")
+                print(f"[LLM] finish_reason: {finish_reason}")
+                if finish_reason == "length":
+                    print("[LLM] 警告: 输出被截断（finish_reason=length）", file=sys.stderr)
                 if content:
                     print(f"[LLM] 编译成功，生成 {len(content)} 字符")
                     return content
