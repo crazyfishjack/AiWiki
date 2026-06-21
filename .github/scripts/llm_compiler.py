@@ -252,10 +252,10 @@ def log_llm_call_end(
     finish_reason: str,
     content_chars: int,
 ) -> None:
-    usage = data.get("usage", {})
-    prompt_tokens = usage.get("prompt_tokens", 0)
-    completion_tokens = usage.get("completion_tokens", 0)
-    total_tokens = usage.get("total_tokens", 0)
+    usage = data.get("usage") or {}
+    prompt_tokens = usage.get("prompt_tokens", 0) if usage else 0
+    completion_tokens = usage.get("completion_tokens", 0) if usage else 0
+    total_tokens = usage.get("total_tokens", 0) if usage else 0
 
     print("", flush=True)
     print("=" * 60, flush=True)
