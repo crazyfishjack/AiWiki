@@ -10,8 +10,14 @@
 
 ```
 标题: [调研] 2026年大模型在招投标领域的最新应用
-正文: （可选，补充详细描述）
+正文: （可选，补充详细描述或 AI 整理要求）
 ```
+
+**正文内容作为 AI 整理要求**：
+- 在 issue 正文中填写的内容会作为 AI 整理时的额外要求传递给 LLM
+- 可以指定重点关注的内容、输出格式、分析角度等
+- 例如："重点关注技术架构部分"、"对比不同厂商方案"、"输出表格对比"等
+- 如不填写，则按默认方式生成报告
 
 GitHub Actions 会自动触发调研流程。
 
@@ -52,9 +58,9 @@ cp .github/scripts/config.example.json .github/scripts/config.local.json
 | -------------------- | -------------------- |
 | `run-research.py`    | 主入口，编排完整管道           |
 | `config_loader.py`   | 配置加载（环境变量 + 本地文件）    |
-| `issue_parser.py`    | 解析 GitHub Issue 提取查询 |
+| `issue_parser.py`    | 解析 GitHub Issue 提取查询和 AI 整理要求 |
 | `research_runner.py` | 调用四工具调研              |
-| `llm_compiler.py`    | 调用阿里云 Qwen 编译报告      |
+| `llm_compiler.py`    | 调用阿里云 Qwen 编译报告（支持额外整理要求） |
 | `git_pusher.py`      | Git commit + push    |
 | `wechat_notifier.py` | 企业微信通知               |
 

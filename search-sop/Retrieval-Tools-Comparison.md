@@ -1,7 +1,7 @@
 ---
 title: "检索工具四件套：Tavily / Exa / Firecrawl / Jina 对比与使用矩阵"
 category: tool
-tags: [tavily, exa, firecrawl, jina, deep-research, retrieval, comparison, api, anti-hallucination, v2]
+tags: [tavily, exa, firecrawl, jina, deep-research, retrieval, comparison, api, anti-hallucination, cost-aware, v2, v2.1]
 sources:
   - https://docs.tavily.com/documentation/api-reference/introduction
   - https://docs.exa.ai/docs/reference/search-api-guide
@@ -17,63 +17,63 @@ related:
   - "[[Firecrawl-API]]"
   - "[[Deep-Research-Methodology]]"
   - "[[Anti-Hallucination-Engineering]]"
-last_compiled: 2026-05-22
+last_compiled: 2026-06-16
 confidence: high
 language: zh-CN+en
 discovery:
-  one_liner: "四工具（Tavily/Exa/Firecrawl/Jina）角色分工、场景速查与可直接运行的 API 调用代码"
+  one_liner: "四工具（Tavily/Exa/Jina/Firecrawl）角色分工、场景速查与可运行 API 代码；v2.1 精读主力=Jina 默认模式、Firecrawl 降级后备，含成本维度"
   topic_cluster: ai-concepts
   load_when:
     - "需要决定用哪个检索工具（Tavily/Exa/Firecrawl/Jina）处理具体场景时"
     - "需要四工具的可运行 Python API 调用代码或参数铁律时"
     - "设计多工具协作研究流程或排查 Jina readerlm-v2 幻觉问题时"
   key_outputs:
-    - "四工具能力对比矩阵（搜索广度/语义理解/精读/结构化萃取等 13 个维度评分）"
-    - "13 类场景首选/备选工具速查表"
-    - "A/B/C/D 四种协作模式架构图（标准研究/快速融合/结构化萃取/整站深研）"
-    - "四工具各端点可直接运行 Python 代码及质量铁律参数"
-    - "中文内容保障、并行执行、Jina readerlm-v2 禁用场景等注意事项"
-  estimated_tokens: 2400
+    - "四工具能力对比矩阵（搜索/语义/精读/结构化/成本等 14 个维度评分，v2.1 含幻觉风险与成本模型）"
+    - "13 类场景首选/备选工具速查表（v2.1：普通页面精读主力=Jina 默认模式）"
+    - "A/B/C/D 四种协作模式架构图（含 v2.1 精读路由：Jina 默认→失败降级 Firecrawl）"
+    - "四工具各端点可运行 Python 代码（含 jina_read 默认模式主力）及质量铁律参数"
+    - "中文内容保障、并行执行、Jina readerlm-v2 禁用（≠禁默认模式）等注意事项"
+  estimated_tokens: 2700
   sections:
     - heading: "概述：四工具当前持有状态"
-      one_liner: "四工具 v2 角色定义与核心端点一览表"
+      one_liner: "四工具 v2.1 角色定义（Jina 默认精读主力、Firecrawl 降级+extract/crawl）与核心端点一览"
       lines: [7, 16]
-      tokens: 150
+      tokens: 160
     - heading: "核心能力对比矩阵"
-      one_liner: "13 个维度星级评分矩阵，含幻觉风险与深度研究端点对比"
-      lines: [18, 36]
-      tokens: 300
+      one_liner: "14 维星级评分矩阵，含幻觉风险（默认模式 vs readerlm-v2）与成本模型对比"
+      lines: [18, 37]
+      tokens: 320
     - heading: "场景选择速查表"
-      one_liner: "13 类检索场景对应首选工具与备选工具速查"
-      lines: [38, 56]
+      one_liner: "13 类检索场景对应首选/备选工具（v2.1：普通页面精读主力=Jina 默认模式）"
+      lines: [39, 57]
       tokens: 300
     - heading: "四工具协作架构（SOP v2）"
-      one_liner: "A/B/C/D 四模式协作流程图，含信源质量过滤与智能精读路由"
-      lines: [58, 105]
+      one_liner: "A/B/C/D 四模式协作流程图，含信源质量过滤与 v2.1 精读路由（Jina 默认→降级 Firecrawl）"
+      lines: [59, 107]
       tokens: 400
     - heading: "API 调用速查"
-      one_liner: "四工具各端点 Python 代码示例及质量铁律参数，含 Jina 禁用场景警告"
-      lines: [107, 237]
-      tokens: 1050
+      one_liner: "四工具各端点 Python 代码（含 jina_read 默认模式主力 + Firecrawl 降级）及质量铁律"
+      lines: [109, 259]
+      tokens: 1250
     - heading: "注意事项"
-      one_liner: "API Key 安全、并行执行、中文内容保障、Exa vs Tavily 选择标准"
-      lines: [239, 262]
-      tokens: 250
+      one_liner: "API Key 安全、并行执行、中文内容保障（Jina 默认主力）、Exa vs Tavily 选择标准"
+      lines: [261, 284]
+      tokens: 260
 ---
 
 # 检索工具四件套：Tavily / Exa / Firecrawl / Jina 对比与使用矩阵
 
-> **v2 更新（2026-05-22）**：Firecrawl 加入成为第四工具，升级为精读主力；Jina 降级为学术 PDF 专用 + Reranker。
-> 工具角色定义、场景速查表、协作方案、调用速查全面更新。
+> **v2 更新（2026-05-22）**：Firecrawl 加入成为第四工具。
+> **v2.1 修正（2026-06-16，成本/原理）**：精读主力 = **Jina Reader 默认模式**（确定性 turndown+readability、非 LLM、按需计费）；**Firecrawl 降为精读降级后备 + `/extract`·`/crawl` 独占主力**；Jina readerlm-v2 仅限学术 PDF。修正依据：① v2「Jina=幻觉」混淆了 Jina 默认模式（纯规则、零幻觉）与可选 readerlm-v2（LLM 重写层）；② Firecrawl 月订阅 credits 不滚存，高频精读迁 Jina 按需更省。详见 `[[Three-Tool-Retrieval-SOP]]` v2.1 变更记录。
 
 ## 概述：四工具当前持有状态
 
-| 工具 | 角色（v2）| 核心端点 | API Key |
+| 工具 | 角色（v2.1）| 核心端点 | API Key |
 |------|----------|---------|---------|
 | **Tavily** | 广度发现主力 | `/search` `/research` | `retrieval-api-keys.md` |
 | **Exa** | 神经语义 / 学术精准 | `/search` `/contents` `/answer` | `retrieval-api-keys.md` |
-| **Firecrawl** | 精读主力 + 结构化萃取 + 整站爬取 | `/scrape` `/search` `/extract` `/crawl` | `retrieval-api-keys.md` |
-| **Jina AI** | 学术 PDF 精读（降级专用）+ Reranker | `r.jina.ai`（readerlm）`/v1/rerank` | `retrieval-api-keys.md` |
+| **Firecrawl** | 结构化萃取/整站爬取主力 + 精读降级后备 | `/scrape` `/search` `/extract` `/crawl` | `retrieval-api-keys.md` |
+| **Jina AI** | 普通页面精读主力（默认模式）+ 学术 PDF（readerlm）+ Reranker | `r.jina.ai` `/v1/rerank` | `retrieval-api-keys.md` |
 
 ---
 
@@ -83,17 +83,18 @@ discovery:
 |------|--------|-----|-----------|------|
 | **搜索广度** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ |
 | **神经语义理解** | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ |
-| **单页精读（普通页面）** | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐（默认）|
+| **单页精读（普通页面）** | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐（降级后备）| ⭐⭐⭐⭐⭐（默认模式主力）|
 | **单页精读（学术PDF）** | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐（readerlm）|
 | **学术内容检索** | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ |
 | **实时新闻** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ |
 | **结构化数据萃取** | ⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ❌ |
-| **中文内容** | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⚠️（readerlm幻觉风险）|
+| **中文内容** | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐（默认模式安全；仅 readerlm 有风险）|
 | **整站爬取** | ❌ | ❌ | ⭐⭐⭐⭐⭐ | ❌ |
 | **搜索+全文一步** | ❌ | ❌ | ⭐⭐⭐⭐⭐ | ❌ |
 | **Embedding / Rerank** | ❌ | ❌ | ❌ | ⭐⭐⭐⭐⭐ |
-| **幻觉注入风险** | 低 | 低 | **极低**（无LLM层）| 中（readerlm有LLM重写）|
+| **幻觉注入风险** | 低 | 低 | **极低**（无LLM层）| 默认模式**极低**；readerlm-v2 中 |
 | **深度研究端点** | ✅ `/research` | ❌ | ❌ | ❌ |
+| **成本模型** | 按次/订阅 | 按次/订阅 | 月订阅·credits 不滚存 | **按 token·失败不扣费** |
 
 ---
 
@@ -107,7 +108,7 @@ discovery:
 | 学术论文检索 | **Exa** (`category: research paper`) | Tavily | 神经语义，100M+ 全文论文 |
 | 公司 / 人物信息 | **Exa** (`category: company`) | Tavily | 50M+ 公司数据库 |
 | 语义发现（无精确关键词）| **Exa** (`deep-reasoning`) | — | 神经网络语义匹配 |
-| 普通页面精读（主力）| **Firecrawl** `/scrape` | 内置 crawl | 确定性抓取，无幻觉注入 |
+| 普通页面精读（主力）| **Jina** 默认模式 | Firecrawl 降级 | 确定性 turndown+readability，按需计费，失败降级 Firecrawl |
 | 搜索 + 全文一步获取 | **Firecrawl** `/search` + scrapeOptions | — | 省去 round-trip |
 | 结构化跨URL数据萃取 | **Firecrawl** `/extract` + schema | — | LLM 驱动结构化提取 |
 | 整站递归爬取 | **Firecrawl** `/crawl` | — | 文档站 / 官网全量入库 |
@@ -136,7 +137,8 @@ discovery:
         │        ↓ 信源质量过滤(score≥0.4)   │
         │  S3: 智能精读路由                   │
         │    学术域名 → Jina readerlm-v2     │
-        │    其他所有 → Firecrawl /scrape    │
+        │    其他所有 → Jina 默认模式（主力） │
+        │      失败降级 → Firecrawl /scrape  │
         │        ↓                           │
         │  S3.5: 跨源矛盾检测（新增）         │
         │        ↓                           │
@@ -227,10 +229,10 @@ def exa_search(query, category=None):
 
 ---
 
-### Firecrawl（精读主力，质量优先）
+### Firecrawl（精读降级后备 + extract/crawl 独占，v2.1）
 
 ```python
-# 单页精读（所有普通页面）
+# 单页精读降级后备（仅 Jina 默认模式失败时兜底）
 def firecrawl_scrape(url):
     r = requests.post(
         "https://api.firecrawl.dev/v2/scrape",
@@ -258,10 +260,30 @@ def firecrawl_search(query, limit=5):
 
 ---
 
-### Jina（学术精读 + Reranker，限定场景）
+### Jina（精读主力默认模式 + 学术 readerlm + Reranker，v2.1）
 
 ```python
-# 学术 PDF 精读（仅限学术域名白名单）
+# 普通页面精读主力：默认模式（不开 readerlm-v2，确定性、按需计费）
+def jina_read(url):
+    r = requests.post(
+        "https://r.jina.ai/",
+        headers={
+            "Authorization": f"Bearer {JINA_KEY}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "X-Return-Format": "markdown",
+            "X-Engine": "browser",                 # 浏览器渲染，无 LLM 重写层
+            "X-Remove-Selector": "nav,footer,aside,script,style",
+            "X-With-Links-Summary": "true",
+            # ⚠️ 绝不设 X-Respond-With:readerlm-v2（那是 LLM 引擎，仅学术用）
+        },
+        json={"url": url},
+        proxies=PROXIES, timeout=60,
+    )
+    r.raise_for_status()
+    return r.json().get("data", {}).get("content", "")
+
+# 学术 PDF 精读（仅限学术域名白名单，显式开 readerlm-v2）
 def jina_read_academic(url):
     r = requests.post(
         "https://r.jina.ai/",
@@ -294,7 +316,7 @@ def jina_rerank(query, documents, top_n=10):
     return r.json()
 ```
 
-⚠️ **Jina readerlm-v2 禁用场景**：任何非学术域名的页面（中文/英文普通页面）。readerlm-v2 是 LLM 重写层，中文内容站实测触发严重幻觉（插入 20+ 条原文不存在内容）。详见 `[[Jina-AI-API]]` § readerlm-v2 幻觉风险。
+⚠️ **Jina readerlm-v2 禁用场景**：任何非学术域名的页面（中文/英文普通页面）禁开 `X-Respond-With:readerlm-v2`——它是 LLM 重写层，中文内容站实测触发严重幻觉（插入 20+ 条原文不存在内容）。**注意：这只禁 readerlm-v2 开关，不禁 Jina 默认模式**——普通页面精读主力正是 `jina_read()` 默认模式（纯规则、零幻觉）。详见 `[[Jina-AI-API]]` § readerlm-v2 幻觉风险。
 
 ---
 
@@ -305,12 +327,12 @@ def jina_rerank(query, documents, top_n=10):
 
 ### ⚡ 并行执行原则
 - Tavily + Exa 的 Stage 2 **同一批次并行发出**，不串行等待
-- Firecrawl 多页精读用 `batch_scrape` 一次性提交
+- 多页精读并行发出（Jina 默认模式主力可并发；降级的 Firecrawl 可用 `batch_scrape`）
 
 ### 🌐 中文内容保障
 - Tavily：中文查询词 + `country="china"` 参数
-- Firecrawl：中文页面表现与英文同等（v2 验证通过）
-- Jina：中文页面关闭 readerlm-v2，改用 Firecrawl
+- Jina 默认模式：中文页面确定性提取、表现稳定（精读主力）；失败再降级 Firecrawl
+- 关闭 readerlm-v2：中文聚合站（搜狐/百家号等 ACRI<40）禁开 readerlm-v2（默认模式无此问题）
 
 ### 📊 Exa vs Tavily 选择标准
 

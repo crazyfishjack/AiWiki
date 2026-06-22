@@ -34,13 +34,15 @@ def main() -> int:
     # 1. 解析参数
     args = parse_args()
 
-    # 2. 获取查询
-    query = get_query(args)
+    # 2. 获取查询和 AI 整理要求
+    query, requirements = get_query(args)
     if not query:
         print("[ERROR] 未找到调研主题", file=sys.stderr)
         return 1
 
     print(f"[INFO] 调研主题: {query}")
+    if requirements:
+        print(f"[INFO] AI 整理要求: {requirements}")
 
     # 3. 加载配置
     print("[INFO] 加载配置...")
@@ -59,7 +61,7 @@ def main() -> int:
 
     # 5. LLM 编译
     print("[INFO] 开始 LLM 编译...")
-    report_text = compile_evidence(evidence_path, config, query)
+    report_text = compile_evidence(evidence_path, config, query, requirements)
     if not report_text:
         print("[WARN] LLM 编译失败，使用原始证据包", file=sys.stderr)
         # 回退：使用原始证据包

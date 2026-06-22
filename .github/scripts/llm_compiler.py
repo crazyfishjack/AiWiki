@@ -67,6 +67,7 @@ USER_PROMPT_TEMPLATE = (
     "# 任务\n\n"
     "基于以下证据包，生成一份详细、可靠的中文调研报告。\n\n"
     "调研主题：[QUERY_PLACEHOLDER]\n\n"
+    "[REQUIREMENTS_PLACEHOLDER]\n"
     "## 报告结构\n\n"
     "## 核心结论\n"
     "- 从证据包中提取 3-7 条可复用结论\n"
@@ -339,6 +340,7 @@ def compile_evidence(
     evidence_path: str,
     config: dict,
     query: str,
+    requirements: str | None = None,
 ) -> str | None:
     if requests is None:
         print("[LLM] 错误: 缺少 requests 依赖", file=sys.stderr)
@@ -375,7 +377,12 @@ def compile_evidence(
         max_input_window=max_input_window,
     )
 
-    prompt = USER_PROMPT_TEMPLATE.replace("[QUERY_PLACEHOLDER]", query).replace("[QUERY_PLACEHOLDER2]", evidence_content)
+    # 构建 requirements 部分
+    requirements_section = ""
+    if requirements:
+        requirements_section = "## 额外整理要求\n" + requirements + "\n\n"
+
+    prompt = USER_PROMPT_TEMPLATE.replace("[QUERY_PLACEHOLDER]", query).replace("[REQUIREMENTS_PLACEHOLDER]", requirements_section).replace("[QUERY_PLACEHOLDER2]", evidence_content)
 
     url = base_url + "/chat/completions"
     headers = {
@@ -470,12 +477,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--evidence", required=True)
     parser.add_argument("--query", required=True)
+    parser.add_argument("--requirements", help="AI 整理额外要求")
     args = parser.parse_args()
 
     from config_loader import load_config
     config = load_config()
 
-    result = compile_evidence(args.evidence, config, args.query)
+    result = compile_evidence(args.evidence, config, args.query, args.requirements)
     if result:
         print(result)
     else:
